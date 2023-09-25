@@ -1,5 +1,5 @@
-pub mod random;
 pub mod minimax;
+pub mod random;
 
 use std::cmp::Ordering;
 

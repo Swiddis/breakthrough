@@ -1,9 +1,12 @@
-pub mod game;
 pub mod engine;
+pub mod game;
 
 use clap::{Parser, ValueEnum};
 
-use crate::{game::{breakthrough::BreakthroughNode, node::Node}, engine::{minimax::get_move, random}};
+use crate::{
+    engine::{minimax::get_move, random},
+    game::{breakthrough::BreakthroughNode, node::Node},
+};
 
 #[derive(Parser, Debug)]
 struct Cli {
@@ -39,7 +42,7 @@ fn selfplay(strategy: PlayStrategy) {
             }
 
             println!("{}", node.to_string());
-        },
+        }
         PlayStrategy::Minimax => {
             let mut node = BreakthroughNode::default();
 
