@@ -1,9 +1,10 @@
 pub mod game;
+pub mod engine;
 
 use clap::{Parser, ValueEnum};
 use rand::prelude::*;
 
-use crate::game::{breakthrough::BreakthroughNode, node::Node};
+use crate::{game::{breakthrough::BreakthroughNode, node::Node}, engine::minimax::get_move};
 
 #[derive(Parser, Debug)]
 struct Cli {
@@ -22,6 +23,7 @@ enum Commands {
 #[derive(Clone, Debug, ValueEnum)]
 enum PlayStrategy {
     Random,
+    Minimax,
 }
 
 fn generate_playout() -> Vec<BreakthroughNode> {
@@ -47,8 +49,19 @@ fn selfplay(strategy: PlayStrategy) {
                 if node.is_terminal() {
                     println!("\nResult: {:?}", node.get_result());
                 } else {
-                    println!("\nTo move: {:?}", node.to_play);
+                    println!("\nTo move: {:?}", node.to_play());
                 }
+            }
+        },
+        PlayStrategy::Minimax => {
+            let mut node = BreakthroughNode::default();
+
+            while !node.is_terminal() {
+                println!("{}\nTo play: {:?}", node.to_string(), node.to_play());
+                let (action, eval) = get_move(&node, 6);
+                println!("{:?}\n", eval);
+
+                node = node.take_action(&action.unwrap());
             }
         }
     }

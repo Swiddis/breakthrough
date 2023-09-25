@@ -22,14 +22,14 @@ const EDGE_RIGHT: u64 = 0x8080808080808080;
 const EDGE_LEFT: u64 = 0x0101010101010101;
 
 // Player, start, end
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct BreakthroughMove(Player, u64, u64);
 
 #[derive(Clone, Hash, Debug)]
 pub struct BreakthroughNode {
     bitboard_black: u64,
     bitboard_white: u64,
-    pub to_play: Player,
+    to_play: Player,
 }
 
 impl BreakthroughNode {
@@ -156,5 +156,9 @@ impl Node<BreakthroughMove> for BreakthroughNode {
                 to_play: Player::Black,
             },
         }
+    }
+
+    fn to_play(&self) -> Player {
+        self.to_play.clone()
     }
 }

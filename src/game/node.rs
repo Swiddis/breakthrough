@@ -16,4 +16,5 @@ pub trait Node<A> {
     fn take_action(&self, action: &A) -> Self;
     fn is_terminal(&self) -> bool;
     fn get_result(&self) -> GameResult;
+    fn to_play(&self) -> Player;
 }
