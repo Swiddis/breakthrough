@@ -1,7 +1,7 @@
 pub mod minimax;
 pub mod random;
 
-use std::cmp::Ordering;
+use std::{cmp::Ordering, ops::Not};
 
 #[derive(Debug, PartialEq, Eq, Ord)]
 pub enum Evaluation {
@@ -32,6 +32,18 @@ impl PartialOrd for Evaluation {
     }
 }
 
+impl Not for Evaluation {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Heuristic(n) => Self::Heuristic(-n),
+            Self::BlackMate(n) => Self::WhiteMate(n),
+            Self::WhiteMate(n) => Self::BlackMate(n),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::engine::Evaluation::*;
@@ -44,5 +56,12 @@ mod test {
         assert!(BlackMate(1) < WhiteMate(1));
         assert!(Heuristic(0) < WhiteMate(1));
         assert!(BlackMate(1) < Heuristic(0));
+    }
+
+    #[test]
+    fn test_negation() {
+        assert_eq!(!Heuristic(10), Heuristic(-10));
+        assert_eq!(!WhiteMate(2), BlackMate(2));
+        assert_eq!(!BlackMate(5), WhiteMate(5));
     }
 }
