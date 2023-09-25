@@ -25,7 +25,7 @@ const EDGE_LEFT: u64 = 0x0101010101010101;
 #[derive(Debug)]
 pub struct BreakthroughMove(Player, u64, u64);
 
-#[derive(Debug)]
+#[derive(Clone, Hash, Debug)]
 pub struct BreakthroughNode {
     bitboard_black: u64,
     bitboard_white: u64,
@@ -42,7 +42,7 @@ impl BreakthroughNode {
         // Diagonal left: filter out left column, shift by 9, filter friendly
         let diag_left = ((self.bitboard_white & !EDGE_LEFT) >> 9) & !self.bitboard_white;
         // Collect moves by destination
-        let mut moves = Vec::new();
+        let mut moves = Vec::with_capacity(32);
         for i in 0..64 {
             if straight_line & (1 << i) > 0 {
                 moves.push(BreakthroughMove(Player::White, i + 8, i))
@@ -66,7 +66,7 @@ impl BreakthroughNode {
         // Diagonal left: filter out left column, shift by 7, filter friendly
         let diag_left = ((self.bitboard_black & !EDGE_LEFT) << 7) & !self.bitboard_black;
         // Collect moves by destination
-        let mut moves = Vec::new();
+        let mut moves = Vec::with_capacity(32);
         for i in 0..64 {
             if straight_line & (1 << i) > 0 {
                 moves.push(BreakthroughMove(Player::Black, i - 8, i))

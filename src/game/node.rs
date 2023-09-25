@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Clone, Hash, Debug)]
 pub enum Player {
     White,
     Black,
