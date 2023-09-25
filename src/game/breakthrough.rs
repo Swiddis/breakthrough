@@ -154,7 +154,7 @@ impl Node<BreakthroughMove> for BreakthroughNode {
                 bitboard_black: self.bitboard_black & !end,
                 bitboard_white: (self.bitboard_white & !start) | end,
                 to_play: Player::Black,
-            }
+            },
         }
     }
 }
