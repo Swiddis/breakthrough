@@ -1,4 +1,4 @@
-#[derive(Clone, Hash, Debug)]
+#[derive(Clone, Hash, Debug, PartialEq, Eq)]
 pub enum Player {
     White,
     Black,
@@ -17,4 +17,5 @@ pub trait Node<A> {
     fn is_terminal(&self) -> bool;
     fn get_result(&self) -> GameResult;
     fn to_play(&self) -> Player;
+    fn bitboards(&self) -> (u64, u64);
 }

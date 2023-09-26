@@ -1,9 +1,10 @@
 pub mod minimax;
 pub mod random;
+pub mod classic;
 
 use std::{cmp::Ordering, ops::Not};
 
-#[derive(Debug, PartialEq, Eq, Ord)]
+#[derive(Debug, PartialEq, Eq, Ord, Clone, Copy)]
 pub enum Evaluation {
     BlackMate(usize),
     WhiteMate(usize),

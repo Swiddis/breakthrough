@@ -4,8 +4,11 @@ pub mod game;
 use clap::{Parser, ValueEnum};
 
 use crate::{
-    engine::{minimax::get_move, random},
-    game::{breakthrough::BreakthroughNode, node::Node},
+    engine::{classic, minimax, random},
+    game::{
+        breakthrough::BreakthroughNode,
+        node::{Node, Player},
+    },
 };
 
 #[derive(Parser, Debug)]
@@ -26,6 +29,7 @@ enum Commands {
 enum PlayStrategy {
     Random,
     Minimax,
+    Classic,
 }
 
 fn selfplay(strategy: PlayStrategy) {
@@ -48,7 +52,20 @@ fn selfplay(strategy: PlayStrategy) {
 
             while !node.is_terminal() {
                 println!("{}\nTo play: {:?}", node.to_string(), node.to_play());
-                let (action, eval) = get_move(&node, 6);
+                let (action, eval) = minimax::get_move(&node, 6);
+                println!("{:?}\n", eval);
+
+                node = node.take_action(&action.unwrap());
+            }
+
+            println!("{}", node.to_string());
+        }
+        PlayStrategy::Classic => {
+            let mut node = BreakthroughNode::default();
+
+            while !node.is_terminal() {
+                println!("{}\nTo play: {:?}", node.to_string(), node.to_play());
+                let (action, eval) = classic::get_move(&node, 5);
                 println!("{:?}\n", eval);
 
                 node = node.take_action(&action.unwrap());

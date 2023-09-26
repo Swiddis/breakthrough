@@ -1,4 +1,7 @@
-use super::node::{GameResult, Node, Player};
+use super::{
+    node::{GameResult, Node, Player},
+    BLACK_FIRST_ROW, BLACK_START, EDGE_LEFT, EDGE_RIGHT, WHITE_FIRST_ROW, WHITE_START,
+};
 
 /*
 Indices: top-to-bottom, left-to-right.
@@ -14,18 +17,11 @@ We view it from White's perspective, so white is on the bottom.
 56 57 58 59 60 61 62 63  |  W  W  W  W  W  W  W  W
  */
 
-const WHITE_FIRST_ROW: u64 = 0xff << 56;
-const BLACK_FIRST_ROW: u64 = 0xff;
-const WHITE_START: u64 = 0xffff << 48;
-const BLACK_START: u64 = 0xffff;
-const EDGE_RIGHT: u64 = 0x8080808080808080;
-const EDGE_LEFT: u64 = 0x0101010101010101;
-
 // Player, start, end
 #[derive(Clone, Debug)]
 pub struct BreakthroughMove(Player, u64, u64);
 
-#[derive(Clone, Hash, Debug)]
+#[derive(Clone, Hash, Debug, PartialEq, Eq)]
 pub struct BreakthroughNode {
     bitboard_black: u64,
     bitboard_white: u64,
@@ -160,5 +156,9 @@ impl Node<BreakthroughMove> for BreakthroughNode {
 
     fn to_play(&self) -> Player {
         self.to_play.clone()
+    }
+
+    fn bitboards(&self) -> (u64, u64) {
+        (self.bitboard_white, self.bitboard_black)
     }
 }
