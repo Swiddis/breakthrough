@@ -5,32 +5,38 @@ pub mod fast_win_check;
 
 use std::{cmp::Ordering, ops::Not};
 
-#[derive(Debug, PartialEq, Eq, Ord, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Evaluation {
     BlackWinPly(u32),
     WhiteWinPly(u32),
     Heuristic(i64),
 }
 
-impl PartialOrd for Evaluation {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl Ord for Evaluation {
+    fn cmp(&self, other: &Self) -> Ordering {
         match self {
             Evaluation::BlackWinPly(n) => match other {
-                Evaluation::BlackWinPly(k) => Some(n.cmp(k)),
-                Evaluation::WhiteWinPly(_) => Some(Ordering::Less),
-                Evaluation::Heuristic(_) => Some(Ordering::Less),
+                Evaluation::BlackWinPly(k) => n.cmp(k),
+                Evaluation::WhiteWinPly(_) => Ordering::Less,
+                Evaluation::Heuristic(_) => Ordering::Less,
             },
             Evaluation::WhiteWinPly(n) => match other {
-                Evaluation::BlackWinPly(_) => Some(Ordering::Greater),
-                Evaluation::WhiteWinPly(k) => Some(k.cmp(n)),
-                Evaluation::Heuristic(_) => Some(Ordering::Greater),
+                Evaluation::BlackWinPly(_) => Ordering::Greater,
+                Evaluation::WhiteWinPly(k) => k.cmp(n),
+                Evaluation::Heuristic(_) => Ordering::Greater,
             },
             Evaluation::Heuristic(n) => match other {
-                Evaluation::BlackWinPly(_) => Some(Ordering::Greater),
-                Evaluation::WhiteWinPly(_) => Some(Ordering::Less),
-                Evaluation::Heuristic(k) => Some(n.cmp(k)),
+                Evaluation::BlackWinPly(_) => Ordering::Greater,
+                Evaluation::WhiteWinPly(_) => Ordering::Less,
+                Evaluation::Heuristic(k) => n.cmp(k),
             },
         }
+    }
+}
+
+impl PartialOrd for Evaluation {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -58,6 +64,8 @@ mod test {
         assert!(BlackWinPly(1) < WhiteWinPly(1));
         assert!(Heuristic(0) < WhiteWinPly(1));
         assert!(BlackWinPly(1) < Heuristic(0));
+        assert!(Heuristic(0) < WhiteWinPly(0));
+        assert!(Heuristic(0) != WhiteWinPly(0));
     }
 
     #[test]
