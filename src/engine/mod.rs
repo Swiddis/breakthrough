@@ -1,6 +1,7 @@
 pub mod minimax;
 pub mod random;
 pub mod classic;
+pub mod fast_win_check;
 
 use std::{cmp::Ordering, ops::Not};
 

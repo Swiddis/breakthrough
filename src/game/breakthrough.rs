@@ -21,7 +21,7 @@ We view it from White's perspective, so white is on the bottom.
 
 // Player, start, end
 #[derive(Clone, Debug)]
-pub struct BreakthroughMove(u8, u8);
+pub struct BreakthroughMove(pub u8, pub u8);
 
 impl BreakthroughMove {
     fn encode_square(square: u8) -> String {

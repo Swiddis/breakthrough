@@ -1,7 +1,7 @@
 use super::Evaluation;
 use crate::game::node::{GameResult, Node, Player};
 
-pub fn get_move<M: Clone, N: Node<M>>(node: &N, depth: usize) -> (Option<M>, Evaluation) {
+pub fn get_move<M: Clone, N: Node<M>>(node: &N, depth: u32) -> (Option<M>, Evaluation) {
     if depth == 0 || node.is_terminal() {
         return match node.get_result() {
             GameResult::Undecided => (None, Evaluation::Heuristic(0)),
