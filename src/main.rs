@@ -7,7 +7,7 @@ use crate::{
     engine::{classic, minimax, random},
     game::{
         breakthrough::BreakthroughNode,
-        node::{Node, Player},
+        node::Node,
     },
 };
 
@@ -66,9 +66,10 @@ fn selfplay(strategy: PlayStrategy) {
             while !node.is_terminal() {
                 println!("{}\nTo play: {:?}", node.to_string(), node.to_play());
                 let (action, eval) = classic::get_move(&node, 5);
-                println!("{:?}\n", eval);
+                let action = action.unwrap();
+                println!("{:?}\n{}", eval, action.to_string());
 
-                node = node.take_action(&action.unwrap());
+                node = node.take_action(&action);
             }
 
             println!("{}", node.to_string());

@@ -3,7 +3,7 @@ use super::{
     BLACK_FIRST_ROW, BLACK_START, EDGE_LEFT, EDGE_RIGHT, WHITE_FIRST_ROW, WHITE_START,
 };
 
-use std::hash::Hash;
+use std::{hash::Hash, str::FromStr};
 
 /*
 Indices: top-to-bottom, left-to-right.
@@ -21,7 +21,48 @@ We view it from White's perspective, so white is on the bottom.
 
 // Player, start, end
 #[derive(Clone, Debug)]
-pub struct BreakthroughMove(Player, u64, u64);
+pub struct BreakthroughMove(u8, u8);
+
+impl BreakthroughMove {
+    fn encode_square(square: u8) -> String {
+        format!("{}{}", (square % 8 + ('a' as u8)) as char, 8 - square / 8)
+    }
+}
+
+impl ToString for BreakthroughMove {
+    fn to_string(&self) -> String {
+        format!(
+            "{}{}",
+            Self::encode_square(self.0),
+            Self::encode_square(self.1)
+        )
+    }
+}
+
+impl FromStr for BreakthroughMove {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() != 4 {
+            return Err(());
+        }
+        let bytes: &[u8] = s.as_bytes();
+        let start: u8;
+        let end: u8;
+        let (a, h, one, eight) = ('a' as u8, 'h' as u8, '1' as u8, '8' as u8);
+        if a <= bytes[0] && h >= bytes[0] && one <= bytes[1] && eight >= bytes[1] {
+            start = (eight - bytes[1]) * 8 + (bytes[0] - a)
+        } else {
+            return Err(());
+        }
+        if a <= bytes[2] && h >= bytes[2] && one <= bytes[3] && eight >= bytes[3] {
+            end = (eight - bytes[3]) * 8 + (bytes[2] - a)
+        } else {
+            return Err(());
+        }
+        Ok(BreakthroughMove(start, end))
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BreakthroughNode {
@@ -44,13 +85,13 @@ impl BreakthroughNode {
         let mut moves = Vec::with_capacity(32);
         for i in 0..64 {
             if straight_line & (1 << i) > 0 {
-                moves.push(BreakthroughMove(Player::White, i + 8, i))
+                moves.push(BreakthroughMove(i + 8, i))
             }
             if diag_right & (1 << i) > 0 {
-                moves.push(BreakthroughMove(Player::White, i + 7, i))
+                moves.push(BreakthroughMove(i + 7, i))
             }
             if diag_left & (1 << i) > 0 {
-                moves.push(BreakthroughMove(Player::White, i + 9, i))
+                moves.push(BreakthroughMove(i + 9, i))
             }
         }
         moves
@@ -68,13 +109,13 @@ impl BreakthroughNode {
         let mut moves = Vec::with_capacity(32);
         for i in 0..64 {
             if straight_line & (1 << i) > 0 {
-                moves.push(BreakthroughMove(Player::Black, i - 8, i))
+                moves.push(BreakthroughMove(i - 8, i))
             }
             if diag_right & (1 << i) > 0 {
-                moves.push(BreakthroughMove(Player::Black, i - 9, i))
+                moves.push(BreakthroughMove(i - 9, i))
             }
             if diag_left & (1 << i) > 0 {
-                moves.push(BreakthroughMove(Player::Black, i - 7, i))
+                moves.push(BreakthroughMove(i - 7, i))
             }
         }
         moves
@@ -151,8 +192,8 @@ impl Node<BreakthroughMove> for BreakthroughNode {
     }
 
     fn take_action(&self, action: &BreakthroughMove) -> Self {
-        let (start, end) = (1 << action.1, 1 << action.2);
-        match action.0 {
+        let (start, end) = (1 << action.0, 1 << action.1);
+        match self.to_play() {
             Player::Black => Self {
                 bitboard_black: (self.bitboard_black & !start) | end,
                 bitboard_white: self.bitboard_white & !end,
@@ -178,5 +219,23 @@ impl Node<BreakthroughMove> for BreakthroughNode {
 
     fn bitboards(&self) -> (u64, u64) {
         (self.bitboard_white, self.bitboard_black)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::str::FromStr;
+
+    use crate::game::breakthrough::BreakthroughMove;
+
+    #[test]
+    fn test_move_str() {
+        for move_str in vec!["a2a3", "b2a3", "e7e6", "f7g6"] {
+            let mv = BreakthroughMove::from_str(move_str);
+            assert_eq!(
+                move_str.to_string(),
+                mv.unwrap().to_string()
+            )
+        }
     }
 }
