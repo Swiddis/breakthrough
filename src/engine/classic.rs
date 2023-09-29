@@ -59,8 +59,8 @@ pub fn alpha_beta<M: Clone, N: Node<M> + Hash + Eq + Clone>(
     if node.is_terminal() {
         return match node.get_result() {
             GameResult::Undecided => (None, evaluate(node)),
-            GameResult::Win(Player::Black) => (None, Evaluation::BlackMate(0)),
-            GameResult::Win(Player::White) => (None, Evaluation::WhiteMate(0)),
+            GameResult::Win(Player::Black) => (None, Evaluation::BlackWinPly(node.ply())),
+            GameResult::Win(Player::White) => (None, Evaluation::WhiteWinPly(node.ply())),
             GameResult::Draw => (None, Evaluation::Heuristic(0)),
         };
     }
@@ -86,8 +86,8 @@ pub fn alpha_beta<M: Clone, N: Node<M> + Hash + Eq + Clone>(
         evaluate(&pos.1)
     }));
     let mut result = match node.to_play() {
-        Player::Black => (None, Evaluation::WhiteMate(0)),
-        Player::White => (None, Evaluation::BlackMate(0)),
+        Player::Black => (None, Evaluation::WhiteWinPly(node.ply())),
+        Player::White => (None, Evaluation::BlackWinPly(node.ply())),
     };
 
     match node.to_play() {
@@ -107,10 +107,6 @@ pub fn alpha_beta<M: Clone, N: Node<M> + Hash + Eq + Clone>(
                 alpha = max(alpha, eval);
             }
 
-            result = match result.1 {
-                Evaluation::WhiteMate(n) => (result.0, Evaluation::WhiteMate(n + 1)),
-                _ => result,
-            };
             transposition_table.insert(node.clone(), result.clone());
         }
         Player::Black => {
@@ -130,10 +126,6 @@ pub fn alpha_beta<M: Clone, N: Node<M> + Hash + Eq + Clone>(
                 beta = min(beta, eval);
             }
 
-            result = match result.1 {
-                Evaluation::BlackMate(n) => (result.0, Evaluation::BlackMate(n + 1)),
-                _ => result,
-            };
             transposition_table.insert(node.clone(), result.clone());
         }
     }
@@ -146,8 +138,8 @@ pub fn get_move<M: Clone, N: Node<M> + Hash + Eq + Clone>(node: &N, depth: i32) 
     alpha_beta(
         node,
         depth,
-        Evaluation::BlackMate(0),
-        Evaluation::WhiteMate(0),
+        Evaluation::BlackWinPly(0),
+        Evaluation::WhiteWinPly(0),
         &mut tt
     )
 }

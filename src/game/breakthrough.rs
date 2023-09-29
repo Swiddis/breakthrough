@@ -3,6 +3,8 @@ use super::{
     BLACK_FIRST_ROW, BLACK_START, EDGE_LEFT, EDGE_RIGHT, WHITE_FIRST_ROW, WHITE_START,
 };
 
+use std::hash::Hash;
+
 /*
 Indices: top-to-bottom, left-to-right.
 We view it from White's perspective, so white is on the bottom.
@@ -21,11 +23,12 @@ We view it from White's perspective, so white is on the bottom.
 #[derive(Clone, Debug)]
 pub struct BreakthroughMove(Player, u64, u64);
 
-#[derive(Clone, Hash, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BreakthroughNode {
     bitboard_black: u64,
     bitboard_white: u64,
     to_play: Player,
+    ply: u32,
 }
 
 impl BreakthroughNode {
@@ -84,7 +87,16 @@ impl Default for BreakthroughNode {
             bitboard_black: BLACK_START,
             bitboard_white: WHITE_START,
             to_play: Player::White,
+            ply: 0,
         }
+    }
+}
+
+impl Hash for BreakthroughNode {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.bitboard_black.hash(state);
+        self.bitboard_white.hash(state);
+        self.to_play.hash(state);
     }
 }
 
@@ -145,17 +157,23 @@ impl Node<BreakthroughMove> for BreakthroughNode {
                 bitboard_black: (self.bitboard_black & !start) | end,
                 bitboard_white: self.bitboard_white & !end,
                 to_play: Player::White,
+                ply: self.ply + 1,
             },
             Player::White => Self {
                 bitboard_black: self.bitboard_black & !end,
                 bitboard_white: (self.bitboard_white & !start) | end,
                 to_play: Player::Black,
+                ply: self.ply + 1,
             },
         }
     }
 
     fn to_play(&self) -> Player {
         self.to_play.clone()
+    }
+
+    fn ply(&self) -> u32 {
+        self.ply
     }
 
     fn bitboards(&self) -> (u64, u64) {
