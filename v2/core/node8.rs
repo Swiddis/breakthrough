@@ -102,6 +102,49 @@ impl BreakthroughNode {
             },
         }
     }
+
+    fn fen_row(&self, row: i32) -> String {
+        let mut empty_count = 0;
+        let mut output = String::new();
+        for col in 0..8 {
+            let pos = row * 8 + col;
+            match (
+                self.bitboard_white & (1 << pos),
+                self.bitboard_black & (1 << pos),
+            ) {
+                (0, 0) => empty_count += 1,
+                (a, _) => {
+                    if empty_count > 0 {
+                        output.push_str(&empty_count.to_string());
+                        empty_count = 0;
+                    }
+                    output.push(if a > 0 { 'w' } else { 'b' });
+                }
+            }
+        }
+        if empty_count > 0 {
+            output.push_str(&empty_count.to_string());
+        }
+        output
+    }
+
+    // Returns a fen-like string associated with self
+    pub fn fen(&self) -> String {
+        let mut output = String::new();
+        for row in 0..8 {
+            output.push_str(&self.fen_row(row));
+            if row < 7 {
+                output.push('/');
+            }
+        }
+        output.push_str(if self.to_play == Player::White {
+            " w "
+        } else {
+            " b "
+        });
+        output.push_str(&((self.ply + 2) / 2).to_string());
+        output
+    }
 }
 
 impl Default for BreakthroughNode {
