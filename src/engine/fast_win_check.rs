@@ -15,8 +15,6 @@ type TTable<'a> = HashMap<BreakthroughNode, Evaluation>;
 fn fast_return(
     node: &BreakthroughNode,
     depth: u32,
-    alpha: Evaluation,
-    beta: Evaluation,
     ttable: &TTable,
 ) -> Option<Evaluation> {
     if depth == 0 || node.is_terminal() {
@@ -27,18 +25,9 @@ fn fast_return(
             GameResult::Draw => Some(Heuristic(0)),
         };
     }
-    match alpha {
-        WhiteWinPly(n) => if node.ply() > n {
-            return Some(alpha);
-        },
-        _ => {}
-    };
-    match beta {
-        BlackWinPly(n) => if node.ply() > n {
-            return Some(beta);
-        },
-        _ => {}
-    };
+    if depth <= 1 {
+        return None;
+    }
     match ttable.get(node) {
         None => None,
         Some(Heuristic(_)) => None,
@@ -48,7 +37,7 @@ fn fast_return(
 
 fn min_win_moves(node: &BreakthroughNode) -> (u32, u32) {
     let (white_bb, black_bb) = node.bitboards();
-    (white_bb.leading_zeros() / 8, black_bb.trailing_zeros() / 8)
+    (white_bb.trailing_zeros() / 8, black_bb.leading_zeros() / 8)
 }
 
 fn early_cut(node: &BreakthroughNode, depth: u32) -> bool {
@@ -91,7 +80,7 @@ fn alpha_beta(
     beta: Evaluation,
     ttable: &mut TTable,
 ) -> Evaluation {
-    match fast_return(node, depth, alpha, beta, ttable) {
+    match fast_return(node, depth, ttable) {
         None => (),
         Some(eval) => {
             return eval;
@@ -112,7 +101,10 @@ fn alpha_beta(
             result = Evaluation::BlackWinPly(0);
             for action in actions.into_iter() {
                 let next = node.take_action(&action);
-                result = max(result, alpha_beta(&next, depth - 1, alpha, beta, ttable));
+                let eval = alpha_beta(&next, depth - 1, alpha, beta, ttable);
+                if result < eval {
+                    result = eval;
+                }
                 if result > beta {
                     break;
                 }
@@ -123,7 +115,10 @@ fn alpha_beta(
             result = Evaluation::WhiteWinPly(0);
             for action in actions.into_iter() {
                 let next = node.take_action(&action);
-                result = min(result, alpha_beta(&next, depth - 1, alpha, beta, ttable));
+                let eval = alpha_beta(&next, depth - 1, alpha, beta, ttable);
+                if result > eval {
+                    result = eval;
+                }
                 if result < alpha {
                     break;
                 }
@@ -132,11 +127,14 @@ fn alpha_beta(
         }
     };
 
-    ttable.insert(node.clone(), result);
+    if depth > 1 {
+        ttable.insert(node.clone(), result.clone());
+    }
     result
 }
 
-pub fn get_move(node: &BreakthroughNode, depth: u32) -> Evaluation {
+pub fn evaluate(node: &BreakthroughNode, depth: u32) -> Evaluation {
     let mut ttable: TTable = HashMap::new();
-    alpha_beta(node, depth, BlackWinPly(0), WhiteWinPly(0), &mut ttable)
+    let result = alpha_beta(node, depth, BlackWinPly(0), WhiteWinPly(0), &mut ttable);
+    result
 }

@@ -20,7 +20,7 @@ We view it from White's perspective, so white is on the bottom.
  */
 
 // Player, start, end
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BreakthroughMove(pub u8, pub u8);
 
 impl BreakthroughMove {
