@@ -19,13 +19,20 @@ impl TranspositionTable {
         }
     }
 
-    // FNV-1a hash using bitboards instead of bytes
+    // FNV-1a hash taking bytes from bitboards
+    // We don't need to hash to-play since positions are unique per player
+    // If they weren't, players could make an infinite loop
     fn hash(node: &BreakthroughNode) -> u64 {
-        const H: u64 = 0xcbf29ce484222325;
-        const P: u64 = 0x100000001b3;
-        // Don't need to hash to_play since positions are unique
-        // If they weren't, the players could make an infinite loop
-        ((H ^ node.bitboard_white).wrapping_mul(P) ^ node.bitboard_black).wrapping_mul(P)
+        const H: u64 = 14695981039346656037;
+        const P: u64 = 1099511628211;
+        let mut hash = H;
+        for i in 0..8 {
+            let byte = (node.bitboard_white >> (8 * i)) & 0xff;
+            hash = (hash ^ byte).wrapping_mul(P);
+            let byte = (node.bitboard_black >> (8 * i)) & 0xff;
+            hash = (hash ^ byte).wrapping_mul(P);
+        }
+        hash
     }
 
     fn get_with_index<'a>(&'a self, node: &BreakthroughNode) -> (usize, &'a Option<Entry>) {
@@ -63,6 +70,7 @@ impl TranspositionTable {
                 if value.0 == entry.0 {
                     self.table.insert(index, Some(entry));
                 } else {
+                    println!("{} | {}", value.0.fen(), entry.0.fen());
                     self.table.insert(index, Some(entry));
                     self.collisions += 1;
                 }
