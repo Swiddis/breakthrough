@@ -98,7 +98,7 @@ fn negamax(node: &BreakthroughNode, depth: u32, alpha: Evaluation, beta: Evaluat
     }
 
     let actions = get_prioritized_actions(node);
-    if actions.len() == 0 {
+    if actions.is_empty() {
         // If there's no reasonable actions, the opponent wins in the next turn
         // Add 2 since lose state is on our next turn
         return Evaluation::BlackWinPly(node.ply + 2);
