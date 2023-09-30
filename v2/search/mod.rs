@@ -110,7 +110,13 @@ fn get_prioritized_actions(node: &BreakthroughNode) -> Vec<BreakthroughMove> {
     actions
 }
 
-fn negamax(node: &BreakthroughNode, depth: u32, alpha: Evaluation, beta: Evaluation, table: &mut TranspositionTable) -> Evaluation {
+fn negamax(
+    node: &BreakthroughNode,
+    depth: u32,
+    alpha: Evaluation,
+    beta: Evaluation,
+    table: &mut TranspositionTable,
+) -> Evaluation {
     if node.is_terminal() || depth == 0 {
         return evaluate_result(node);
     }
@@ -144,13 +150,17 @@ fn negamax(node: &BreakthroughNode, depth: u32, alpha: Evaluation, beta: Evaluat
     value
 }
 
-pub fn evaluate_with_ttable(node: &BreakthroughNode, depth: u32, table: &mut TranspositionTable) -> Evaluation {
+pub fn evaluate_with_ttable(
+    node: &BreakthroughNode,
+    depth: u32,
+    table: &mut TranspositionTable,
+) -> Evaluation {
     negamax(
         node,
         depth,
         Evaluation::BlackWinPly(node.ply),
         Evaluation::WhiteWinPly(node.ply),
-        table
+        table,
     )
 }
 
@@ -160,6 +170,6 @@ pub fn evaluate(node: &BreakthroughNode, depth: u32) -> Evaluation {
         depth,
         Evaluation::BlackWinPly(node.ply),
         Evaluation::WhiteWinPly(node.ply),
-        &mut TranspositionTable::new(0)
+        &mut TranspositionTable::new(0),
     )
 }

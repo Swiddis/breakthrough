@@ -32,16 +32,18 @@ impl FromStr for BreakthroughMove {
             return Err(());
         }
         let bytes: &[u8] = s.as_bytes();
-        let start: u8 = if b'a' <= bytes[0] && b'h' >= bytes[0] && b'1' <= bytes[1] && b'8' >= bytes[1] {
-            (b'8' - bytes[1]) * 8 + (bytes[0] - b'a')
-        } else {
-            return Err(());
-        };
-        let end: u8 = if b'a' <= bytes[2] && b'h' >= bytes[2] && b'1' <= bytes[3] && b'8' >= bytes[3] {
-            (b'8' - bytes[3]) * 8 + (bytes[2] - b'a')
-        } else {
-            return Err(());
-        };
+        let start: u8 =
+            if b'a' <= bytes[0] && b'h' >= bytes[0] && b'1' <= bytes[1] && b'8' >= bytes[1] {
+                (b'8' - bytes[1]) * 8 + (bytes[0] - b'a')
+            } else {
+                return Err(());
+            };
+        let end: u8 =
+            if b'a' <= bytes[2] && b'h' >= bytes[2] && b'1' <= bytes[3] && b'8' >= bytes[3] {
+                (b'8' - bytes[3]) * 8 + (bytes[2] - b'a')
+            } else {
+                return Err(());
+            };
         Ok(BreakthroughMove(start, end))
     }
 }

@@ -1,4 +1,8 @@
-use v2::{evaluation, core::{Evaluation, Player}, search::{self, table::TranspositionTable}};
+use v2::{
+    core::{Evaluation, Player},
+    evaluation,
+    search::{self, table::TranspositionTable},
+};
 
 mod common;
 
@@ -10,17 +14,21 @@ fn mate_in_n_heuristic_correctness() {
     for (node, expect_eval, _) in dataset.iter() {
         let actual_eval = evaluation::fast_heuristic(node);
         match expect_eval {
-            Evaluation::BlackWinPly(_) => if actual_eval < Evaluation::Heuristic(0) {
-                correct += 1;
-            } else {
-                incorrect += 1;
-            },
-            Evaluation::WhiteWinPly(_) => if actual_eval > Evaluation::Heuristic(0) {
-                correct += 1;
-            } else {
-                incorrect += 1;
-            },
-            Evaluation::Heuristic(_) => {},
+            Evaluation::BlackWinPly(_) => {
+                if actual_eval < Evaluation::Heuristic(0) {
+                    correct += 1;
+                } else {
+                    incorrect += 1;
+                }
+            }
+            Evaluation::WhiteWinPly(_) => {
+                if actual_eval > Evaluation::Heuristic(0) {
+                    correct += 1;
+                } else {
+                    incorrect += 1;
+                }
+            }
+            Evaluation::Heuristic(_) => {}
         }
     }
 
@@ -31,7 +39,7 @@ fn mate_in_n_heuristic_correctness() {
 #[test]
 fn mate_in_n_negamax_correctness() {
     let dataset = common::read_positions("tests/data/mate-in-n.txt").unwrap();
-    
+
     for (node, expect_eval, depth) in dataset.iter().take(50) {
         let actual_eval = match node.to_play {
             Player::White => search::evaluate(node, *depth),
@@ -47,8 +55,8 @@ fn mate_in_n_negamax_correctness() {
 #[test]
 fn mate_in_n_negamax_ttable_correctness() {
     let dataset = common::read_positions("tests/data/mate-in-n.txt").unwrap();
-    let mut table = TranspositionTable::new(65536);
-    
+    let mut table = TranspositionTable::new(2usize.pow(16));
+
     for (node, expect_eval, depth) in dataset.iter().take(50) {
         let actual_eval = match node.to_play {
             Player::White => search::evaluate_with_ttable(node, *depth, &mut table),

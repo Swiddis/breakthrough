@@ -37,7 +37,10 @@ impl TranspositionTable {
 
     fn get_with_index<'a>(&'a self, node: &BreakthroughNode) -> (usize, &'a Option<Entry>) {
         let index: usize = (Self::hash(node) as usize) % self.capacity;
-        (index, self.table.get(index).expect("index should be in bounds"))
+        (
+            index,
+            self.table.get(index).expect("index should be in bounds"),
+        )
     }
 
     pub fn get(&self, node: &BreakthroughNode, depth: u32) -> Option<&Entry> {
@@ -70,7 +73,6 @@ impl TranspositionTable {
                 if value.0 == entry.0 {
                     self.table.insert(index, Some(entry));
                 } else {
-                    println!("{} | {}", value.0.fen(), entry.0.fen());
                     self.table.insert(index, Some(entry));
                     self.collisions += 1;
                 }

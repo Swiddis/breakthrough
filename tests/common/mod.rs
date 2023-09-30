@@ -1,10 +1,17 @@
-use std::{path::Path, fs::File, str::FromStr, io::{self, BufRead}};
+use std::{
+    fs::File,
+    io::{self, BufRead},
+    path::Path,
+    str::FromStr,
+};
 
-use v2::core::{node8::BreakthroughNode, Evaluation, move8::BreakthroughMove};
+use v2::core::{move8::BreakthroughMove, node8::BreakthroughNode, Evaluation};
 
 use anyhow::anyhow;
 
-pub fn read_positions(filename: &str) -> Result<Vec<(BreakthroughNode, Evaluation, u32)>, anyhow::Error> {
+pub fn read_positions(
+    filename: &str,
+) -> Result<Vec<(BreakthroughNode, Evaluation, u32)>, anyhow::Error> {
     let path = Path::new(filename);
     let file = File::open(&path)?;
 
