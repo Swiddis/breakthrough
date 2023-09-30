@@ -1,4 +1,4 @@
-use v2::{evaluation, core::{Evaluation, Player}, search};
+use v2::{evaluation, core::{Evaluation, Player}, search::{self, table::TranspositionTable}};
 
 mod common;
 
@@ -42,4 +42,23 @@ fn mate_in_n_negamax_correctness() {
         }
         assert_eq!(expect_eval, &actual_eval);
     }
+}
+
+#[test]
+fn mate_in_n_negamax_ttable_correctness() {
+    let dataset = common::read_positions("tests/data/mate-in-n.txt").unwrap();
+    let mut table = TranspositionTable::new(65536);
+    
+    for (node, expect_eval, depth) in dataset.iter().take(50) {
+        let actual_eval = match node.to_play {
+            Player::White => search::evaluate_with_ttable(node, *depth, &mut table),
+            Player::Black => -search::evaluate_with_ttable(node, *depth, &mut table),
+        };
+        if expect_eval != &actual_eval {
+            eprintln!("{:?}\n{}\n{}", node, node.fen(), node.to_string());
+        }
+        assert_eq!(expect_eval, &actual_eval);
+    }
+
+    eprintln!("{:?}", table.stats());
 }

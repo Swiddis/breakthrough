@@ -1,21 +1,21 @@
 use crate::core::{node8::BreakthroughNode, Evaluation};
 
-type Entry<'a> = (&'a BreakthroughNode, u32, &'a Evaluation);
+type Entry = (BreakthroughNode, u32, Evaluation);
 
-pub struct TranspositionTable<'a> {
+pub struct TranspositionTable {
     capacity: usize,
     collisions: usize,
     occupied: usize,
-    table: Vec<Entry<'a>>,
+    table: Vec<Option<Entry>>,
 }
 
-impl<'a> TranspositionTable<'a> {
+impl TranspositionTable {
     pub fn new(capacity: usize) -> Self {
         Self {
-            capacity: 0,
+            capacity,
             collisions: 0,
             occupied: 0,
-            table: Vec::with_capacity(capacity)
+            table: vec![None; capacity],
         }
     }
 
@@ -28,35 +28,45 @@ impl<'a> TranspositionTable<'a> {
         ((H ^ node.bitboard_white).wrapping_mul(P) ^ node.bitboard_black).wrapping_mul(P)
     }
 
-    fn get_with_index(&self, node: &BreakthroughNode) -> (usize, Option<&Entry>) {
+    fn get_with_index<'a>(&'a self, node: &BreakthroughNode) -> (usize, &'a Option<Entry>) {
         let index: usize = (Self::hash(node) as usize) % self.capacity;
-        (index, self.table.get(index))
+        (index, self.table.get(index).expect("index should be in bounds"))
     }
 
-    pub fn get(&self, node: &BreakthroughNode) -> Option<&Entry> {
+    pub fn get(&self, node: &BreakthroughNode, depth: u32) -> Option<&Entry> {
+        if self.capacity == 0 {
+            return None;
+        }
+
         let result = self.get_with_index(node).1;
         match result {
             None => None,
-            Some(entry) => match entry.0 == node {
+            Some(entry) => match &entry.0 == node && entry.1 >= depth {
                 false => None,
                 true => Some(entry),
-            }
+            },
         }
     }
 
-    pub fn put(&mut self, entry: Entry<'a>) {
-        let (index, current) = self.get_with_index(entry.0);
+    pub fn put(&mut self, entry: Entry) {
+        if self.capacity == 0 {
+            return;
+        }
+
+        let (index, current) = self.get_with_index(&entry.0);
         match current {
             None => {
-                self.table.insert(index, entry);
+                self.table.insert(index, Some(entry));
                 self.occupied += 1;
-            },
-            Some(value) => if value.0 == entry.0 {
-                self.table.insert(index, entry);
-            } else {
-                self.table.insert(index, entry);
-                self.collisions += 1;
-            },
+            }
+            Some(value) => {
+                if value.0 == entry.0 {
+                    self.table.insert(index, Some(entry));
+                } else {
+                    self.table.insert(index, Some(entry));
+                    self.collisions += 1;
+                }
+            }
         }
     }
 
