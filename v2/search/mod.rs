@@ -49,7 +49,7 @@ pub fn negamax(node: &BreakthroughNode, depth: u32) -> Evaluation {
 
     let best_eval = node.get_possible_actions().iter().map(|action| {
         let child = node.take_action(action);
-        !negamax(&child, depth - 1)
+        -negamax(&child, depth - 1)
     }).max();
 
     best_eval.unwrap()

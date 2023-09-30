@@ -2,7 +2,7 @@ pub mod constants8;
 pub mod move8;
 pub mod node8;
 
-use std::{cmp::Ordering, ops::Not};
+use std::{cmp::Ordering, ops::Neg};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Player {
@@ -52,10 +52,10 @@ impl PartialOrd for Evaluation {
     }
 }
 
-impl Not for Evaluation {
+impl Neg for Evaluation {
     type Output = Self;
 
-    fn not(self) -> Self::Output {
+    fn neg(self) -> Self::Output {
         match self {
             Self::Heuristic(n) => Self::Heuristic(-n),
             Self::BlackWinPly(n) => Self::WhiteWinPly(n),
@@ -82,8 +82,8 @@ mod test {
 
     #[test]
     fn test_negation() {
-        assert_eq!(!Heuristic(10), Heuristic(-10));
-        assert_eq!(!WhiteWinPly(2), BlackWinPly(2));
-        assert_eq!(!BlackWinPly(5), WhiteWinPly(5));
+        assert_eq!(-Heuristic(10), Heuristic(-10));
+        assert_eq!(-WhiteWinPly(2), BlackWinPly(2));
+        assert_eq!(-BlackWinPly(5), WhiteWinPly(5));
     }
 }
