@@ -1,4 +1,7 @@
-use crate::core::{node8::BreakthroughNode, Evaluation};
+use crate::{
+    core::{node8::BreakthroughNode, Evaluation},
+    search::zobrist::zobrist_keys,
+};
 
 type Entry = (BreakthroughNode, u32, Evaluation);
 
@@ -23,16 +26,20 @@ impl TranspositionTable {
     // We don't need to hash to-play since positions are unique per player
     // If they weren't, players could make an infinite loop
     fn hash(node: &BreakthroughNode) -> u64 {
-        const H: u64 = 14695981039346656037;
-        const P: u64 = 1099511628211;
-        let mut hash = H;
-        for i in 0..8 {
-            let byte = (node.bitboard_white >> (8 * i)) & 0xff;
-            hash = (hash ^ byte).wrapping_mul(P);
-            let byte = (node.bitboard_black >> (8 * i)) & 0xff;
-            hash = (hash ^ byte).wrapping_mul(P);
-        }
-        hash
+        let keys = zobrist_keys();
+        (0..64)
+            .map(|i| {
+                match (
+                    node.bitboard_white & (1 << i),
+                    node.bitboard_black & (1 << i),
+                ) {
+                    (0, 0) => keys[i],
+                    (0, _) => keys[64 + i],
+                    (_, _) => keys[128 + i],
+                }
+            })
+            .reduce(|a, b| a ^ b)
+            .unwrap_or(0)
     }
 
     fn get_with_index<'a>(&'a self, node: &BreakthroughNode) -> (usize, &'a Option<Entry>) {

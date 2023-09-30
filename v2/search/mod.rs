@@ -13,6 +13,7 @@ use crate::{
 use self::table::TranspositionTable;
 
 pub mod table;
+mod zobrist;
 
 // Attempt to evaluate the current node
 // Return negative if the game is over since the current player has already lost

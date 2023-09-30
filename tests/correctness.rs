@@ -55,7 +55,7 @@ fn mate_in_n_negamax_correctness() {
 #[test]
 fn mate_in_n_negamax_ttable_correctness() {
     let dataset = common::read_positions("tests/data/mate-in-n.txt").unwrap();
-    let mut table = TranspositionTable::new(2usize.pow(16));
+    let mut table = TranspositionTable::new(2usize.pow(18));
 
     for (node, expect_eval, depth) in dataset.iter().take(50) {
         let actual_eval = match node.to_play {

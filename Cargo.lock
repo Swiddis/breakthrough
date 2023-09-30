@@ -69,6 +69,7 @@ dependencies = [
  "anyhow",
  "clap",
  "rand",
+ "rand_chacha",
  "rayon",
 ]
 
