@@ -4,7 +4,7 @@ use v2::core::{node8::BreakthroughNode, Evaluation, move8::BreakthroughMove};
 
 use anyhow::anyhow;
 
-pub fn read_positions(filename: &str) -> Result<Vec<(BreakthroughNode, Evaluation)>, anyhow::Error> {
+pub fn read_positions(filename: &str) -> Result<Vec<(BreakthroughNode, Evaluation, u32)>, anyhow::Error> {
     let path = Path::new(filename);
     let file = File::open(&path)?;
 
@@ -19,9 +19,10 @@ pub fn read_positions(filename: &str) -> Result<Vec<(BreakthroughNode, Evaluatio
             parts.next().unwrap(),
             parts.collect::<Vec<&str>>(),
         );
+        let depth = depth.parse::<u32>()?;
         let eval = match winner {
-            "w" => Evaluation::WhiteWinPly(moves.len() as u32 + depth.parse::<u32>()?),
-            "b" => Evaluation::BlackWinPly(moves.len() as u32 + depth.parse::<u32>()?),
+            "w" => Evaluation::WhiteWinPly(moves.len() as u32 + depth - 1),
+            "b" => Evaluation::BlackWinPly(moves.len() as u32 + depth - 1),
             _ => return Err(anyhow!("Invalid eval winner")),
         };
         let mut node = BreakthroughNode::default();
@@ -37,7 +38,7 @@ pub fn read_positions(filename: &str) -> Result<Vec<(BreakthroughNode, Evaluatio
             }
         }
 
-        nodes.push((node, eval));
+        nodes.push((node, eval, depth));
     }
 
     Ok(nodes)
