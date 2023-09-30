@@ -3,8 +3,7 @@ pub mod game;
 
 use clap::{Parser, ValueEnum};
 use engine::Evaluation;
-use rand::{rngs::ThreadRng, seq::SliceRandom, Rng};
-use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rand::{rngs::ThreadRng, seq::SliceRandom};
 
 use crate::{
     engine::{classic, fast_win_check, minimax, random},
@@ -134,16 +133,17 @@ fn find_endgames(
             Evaluation::BlackWinPly(n) => if min_depth <= n - node.ply() && n - node.ply() <= max_depth {
                 moves.push(eval.0.clone());
                 output_setup(Player::Black, node.to_play(), n - node.ply(), &moves);
-                moves.pop();               
+                moves.pop();    
+                count += 1;           
             },
             Evaluation::WhiteWinPly(n) => if min_depth <= n - node.ply() && n - node.ply() <= max_depth {
                 moves.push(eval.0.clone());
                 output_setup(Player::White, node.to_play(), n - node.ply(), &moves);
                 moves.pop();
+                count += 1;
             },
             Evaluation::Heuristic(_) => continue,
         }
-        count += 1;
     }
     count
 }
