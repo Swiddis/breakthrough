@@ -32,10 +32,10 @@ fn mate_in_n_heuristic_correctness() {
 fn mate_in_n_negamax_correctness() {
     let dataset = common::read_positions("tests/data/mate-in-n.txt").unwrap();
     
-    for (node, expect_eval, depth) in dataset.iter().filter(|x| x.2 <= 4).take(50) {
+    for (node, expect_eval, depth) in dataset.iter().take(50) {
         let actual_eval = match node.to_play {
-            Player::White => search::negamax(node, *depth),
-            Player::Black => -search::negamax(node, *depth),
+            Player::White => search::evaluate(node, *depth),
+            Player::Black => -search::evaluate(node, *depth),
         };
         if expect_eval != &actual_eval {
             eprintln!("{:?}\n{}\n{}", node, node.fen(), node.to_string());
