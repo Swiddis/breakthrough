@@ -9,6 +9,8 @@ use crate::{
     evaluation::fast_heuristic,
 };
 
+pub mod table;
+
 // Attempt to evaluate the current node
 // Return negative if the game is over since the current player has already lost
 // Otherwise return positive

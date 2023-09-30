@@ -162,7 +162,6 @@ impl Hash for BreakthroughNode {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.bitboard_black.hash(state);
         self.bitboard_white.hash(state);
-        self.to_play.hash(state);
     }
 }
 
