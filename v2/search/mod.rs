@@ -6,7 +6,7 @@ pub mod negamax;
 pub mod table;
 mod zobrist;
 
-pub fn evaluate_with_ttable<'a>(
+pub fn evaluate_with_ttable(
     node: &BreakthroughNode,
     depth: u32,
     table: &mut TranspositionTable,
@@ -20,7 +20,7 @@ pub fn evaluate_with_ttable<'a>(
     )
 }
 
-pub fn evaluate<'a>(node: &BreakthroughNode, depth: u32) -> (Option<BreakthroughMove>, Evaluation) {
+pub fn evaluate(node: &BreakthroughNode, depth: u32) -> (Option<BreakthroughMove>, Evaluation) {
     negamax::negamax(
         node,
         depth,

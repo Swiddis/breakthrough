@@ -45,7 +45,7 @@ fn fast_win(node: &BreakthroughNode) -> Option<Evaluation> {
 
 // Moves sorted by priority and filtered to remove obvious losing moves
 fn get_filtered_actions(node: &BreakthroughNode) -> Vec<BreakthroughMove> {
-    let mut actions: Vec<BreakthroughMove> = node
+    let actions: Vec<BreakthroughMove> = node
         .get_possible_actions()
         .into_iter()
         .filter(|action| {
@@ -99,7 +99,7 @@ fn guess_priority(
 
 fn prioritize_actions(
     node: &BreakthroughNode,
-    actions: &mut Vec<BreakthroughMove>,
+    actions: &mut [BreakthroughMove],
 ) {
     actions.sort_unstable_by_key(|action| {
         let (opp_start, opp_side, self_base) = match node.to_play {
