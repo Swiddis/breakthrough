@@ -4,6 +4,7 @@ use self::table::TranspositionTable;
 
 pub mod negamax;
 pub mod table;
+mod zobrist;
 
 pub fn evaluate_with_ttable<'a>(
     node: &BreakthroughNode,
