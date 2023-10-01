@@ -58,9 +58,17 @@ impl TranspositionTable {
         let result = self.get_with_index(node).1;
         match result {
             None => None,
-            Some(entry) => match &entry.0 == node && entry.1 >= depth {
-                false => None,
-                true => Some(entry),
+            Some(entry) => {
+                if &entry.0 != node {
+                    return None;
+                }
+                // If the outcome is a mate, ignore depth constraints
+                // Otherwise return only if we have the requested depth
+                match (entry.2, entry.1 < depth) {
+                    (Evaluation::Heuristic(_), true) => None,
+                    (Evaluation::Heuristic(_), false) => Some(entry),
+                    (_, _) => Some(entry),
+                }
             },
         }
     }
