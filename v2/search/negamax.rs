@@ -44,13 +44,9 @@ fn fast_win(node: &BreakthroughNode) -> Option<Evaluation> {
 }
 
 // Moves sorted by priority and filtered to remove obvious losing moves
-fn get_prioritized_actions(node: &BreakthroughNode) -> Vec<BreakthroughMove> {
-    // We detect captures lazily, a destination on any piece is a capture
-    let any_bitboard = node.bitboard_white | node.bitboard_black;
-
-    let actions = node.get_possible_actions();
-
-    let mut actions: Vec<BreakthroughMove> = actions
+fn get_filtered_actions(node: &BreakthroughNode) -> Vec<BreakthroughMove> {
+    let mut actions: Vec<BreakthroughMove> = node
+        .get_possible_actions()
         .into_iter()
         .filter(|action| {
             // If opponent is threatening a win, we can only recapture
@@ -73,8 +69,39 @@ fn get_prioritized_actions(node: &BreakthroughNode) -> Vec<BreakthroughMove> {
         })
         .collect();
 
+    actions
+}
+
+fn guess_priority(
+    source_square: u64,
+    target_square: u64,
+    opp_start: u64,
+    opp_side: u64,
+    self_base: u64,
+    any_bitboard: u64,
+) -> i32 {
+    if target_square & opp_start > 0 {
+        // Priority 0: Almost-winning moves
+        0
+    } else if target_square & any_bitboard > 0 {
+        // Priority 1: Captures
+        1
+    } else if target_square & opp_side > 0 {
+        // Priority 2: Entering the opponent's side of the board
+        2
+    } else if (source_square & self_base) > 0 {
+        // Avoid moving pieces from the start row unless necessary
+        100
+    } else {
+        50
+    }
+}
+
+fn prioritize_actions(
+    node: &BreakthroughNode,
+    actions: &mut Vec<BreakthroughMove>,
+) {
     actions.sort_unstable_by_key(|action| {
-        let target_square = 1 << action.1;
         let (opp_start, opp_side, self_base) = match node.to_play {
             Player::White => (
                 BLACK_START,
@@ -87,24 +114,16 @@ fn get_prioritized_actions(node: &BreakthroughNode) -> Vec<BreakthroughMove> {
                 BLACK_FIRST_ROW,
             ),
         };
-        if target_square & opp_start > 0 {
-            // Priority 0: Almost-winning moves
-            0
-        } else if target_square & any_bitboard > 0 {
-            // Priority 1: Captures
-            1
-        } else if target_square & opp_side > 0 {
-            // Priority 2: Entering the opponent's side of the board
-            2
-        } else if ((1 << action.0) & self_base) > 0 {
-            // Avoid moving pieces from the start row unless necessary
-            100
-        } else {
-            50
-        }
+        // Prioritize seen nodes before new ones
+        guess_priority(
+            1 << action.0,
+            1 << action.1,
+            opp_start,
+            opp_side,
+            self_base,
+            node.bitboard_white | node.bitboard_black,
+        )
     });
-
-    actions
 }
 
 pub fn negamax(
@@ -127,12 +146,13 @@ pub fn negamax(
         return (None, entry.2);
     }
 
-    let actions = get_prioritized_actions(node);
+    let mut actions = get_filtered_actions(node);
     if actions.is_empty() {
         // If there's no reasonable actions, the opponent wins in the next turn
         // Add 2 since lose state is on our next turn
         return (None, Evaluation::BlackWinPly(node.ply + 2));
     }
+    prioritize_actions(node, &mut actions);
 
     let (mut alpha, beta) = (alpha, beta);
     let mut value = (None, Evaluation::BlackWinPly(node.ply));

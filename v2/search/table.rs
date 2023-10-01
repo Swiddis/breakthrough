@@ -66,14 +66,14 @@ impl TranspositionTable {
         let (index, current) = self.get_with_index(&entry.0);
         match current {
             None => {
-                self.table.insert(index, Some(entry));
+                self.table[index] = Some(entry);
                 self.occupied += 1;
             }
             Some(value) => {
                 if value.0 == entry.0 {
-                    self.table.insert(index, Some(entry));
+                    self.table[index] = Some(entry);
                 } else {
-                    self.table.insert(index, Some(entry));
+                    self.table[index] = Some(entry);
                     self.collisions += 1;
                 }
             }
