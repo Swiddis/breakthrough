@@ -18,7 +18,10 @@ fn evaluate_result(node: &BreakthroughNode) -> Evaluation {
     match node.get_result() {
         GameResult::Win(Player::White) => Evaluation::BlackWinPly(node.ply),
         GameResult::Win(Player::Black) => Evaluation::BlackWinPly(node.ply),
-        GameResult::Undecided => fast_heuristic(node),
+        GameResult::Undecided => match node.to_play {
+            Player::White => fast_heuristic(node),
+            Player::Black => -fast_heuristic(node),
+        },
     }
 }
 
@@ -97,10 +100,7 @@ fn guess_priority(
     }
 }
 
-fn prioritize_actions(
-    node: &BreakthroughNode,
-    actions: &mut [BreakthroughMove],
-) {
+fn prioritize_actions(node: &BreakthroughNode, actions: &mut [BreakthroughMove]) {
     actions.sort_unstable_by_key(|action| {
         let (opp_start, opp_side, self_base) = match node.to_play {
             Player::White => (
@@ -144,7 +144,7 @@ pub fn negamax(
         if let Some(eval) = fast_win(node) {
             return (None, eval);
         }
-    
+
         if let Some(entry) = table.get(node, depth) {
             return (None, entry.2);
         }
@@ -156,13 +156,23 @@ pub fn negamax(
         // Add 2 since lose state is on our next turn
         return (None, Evaluation::BlackWinPly(node.ply + 2));
     }
-    prioritize_actions(node, &mut actions);
+    // Skip expensive prioritization of near-leaf nodes
+    if depth > 1 {
+        prioritize_actions(node, &mut actions);
+    }
 
     let (mut alpha, beta) = (alpha, beta);
     let mut value = (None, Evaluation::BlackWinPly(node.ply));
     for action in actions.iter() {
         let child = node.take_action(action);
-        let eval = negamax(&child, depth - 1, -beta, -alpha, table, false);
+        let eval = negamax(
+            &child,
+            depth - 1,
+            -beta,
+            -alpha,
+            table,
+            false,
+        );
         if -eval.1 > value.1 {
             value = (Some(action), -eval.1);
         }

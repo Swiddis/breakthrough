@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, io::{self, ErrorKind}};
 
 /**
  * Primitives for handling moves on an 8x8 board
@@ -25,24 +25,24 @@ impl ToString for BreakthroughMove {
 }
 
 impl FromStr for BreakthroughMove {
-    type Err = ();
+    type Err = io::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != 4 {
-            return Err(());
+            return Err(io::Error::new(ErrorKind::InvalidInput, "must be length 4"));
         }
         let bytes: &[u8] = s.as_bytes();
         let start: u8 =
             if b'a' <= bytes[0] && b'h' >= bytes[0] && b'1' <= bytes[1] && b'8' >= bytes[1] {
                 (b'8' - bytes[1]) * 8 + (bytes[0] - b'a')
             } else {
-                return Err(());
+                return Err(io::Error::new(ErrorKind::InvalidInput, "first square is invalid"));
             };
         let end: u8 =
             if b'a' <= bytes[2] && b'h' >= bytes[2] && b'1' <= bytes[3] && b'8' >= bytes[3] {
                 (b'8' - bytes[3]) * 8 + (bytes[2] - b'a')
             } else {
-                return Err(());
+                return Err(io::Error::new(ErrorKind::InvalidInput, "second square is invalid"));
             };
         Ok(BreakthroughMove(start, end))
     }
