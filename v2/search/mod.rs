@@ -116,45 +116,50 @@ fn negamax(
     alpha: Evaluation,
     beta: Evaluation,
     table: &mut TranspositionTable,
-) -> Evaluation {
+) -> (Option<BreakthroughMove>, Evaluation) {
     if node.is_terminal() || depth == 0 {
-        return evaluate_result(node);
+        return (None, evaluate_result(node));
     }
     if let Some(eval) = fast_win(node) {
-        return eval;
+        // TODO determine actual winning move
+        return (None, eval);
     }
 
     if let Some(entry) = table.get(node, depth) {
-        return entry.2;
+        // TODO store actual winning move in table
+        return (None, entry.2);
     }
 
     let actions = get_prioritized_actions(node);
     if actions.is_empty() {
         // If there's no reasonable actions, the opponent wins in the next turn
         // Add 2 since lose state is on our next turn
-        return Evaluation::BlackWinPly(node.ply + 2);
+        return (None, Evaluation::BlackWinPly(node.ply + 2));
     }
 
     let (mut alpha, beta) = (alpha, beta);
-    let mut value = Evaluation::BlackWinPly(node.ply);
+    let mut value = (None, Evaluation::BlackWinPly(node.ply));
     for action in actions.iter() {
         let child = node.take_action(action);
-        value = max(value, -negamax(&child, depth - 1, -beta, -alpha, table));
-        alpha = max(alpha, value);
+        let eval = negamax(&child, depth - 1, -beta, -alpha, table);
+        if -eval.1 > value.1 {
+            value = (Some(action), -eval.1);
+        }
+        alpha = max(alpha, value.1);
         if alpha >= beta {
             break;
         }
     }
 
-    table.put((node.clone(), depth, value));
-    value
+    table.put((node.clone(), depth, value.1));
+    (value.0.cloned(), value.1)
 }
 
-pub fn evaluate_with_ttable(
+pub fn evaluate_with_ttable<'a>(
     node: &BreakthroughNode,
     depth: u32,
     table: &mut TranspositionTable,
-) -> Evaluation {
+) -> (Option<BreakthroughMove>, Evaluation) {
     negamax(
         node,
         depth,
@@ -164,7 +169,7 @@ pub fn evaluate_with_ttable(
     )
 }
 
-pub fn evaluate(node: &BreakthroughNode, depth: u32) -> Evaluation {
+pub fn evaluate<'a>(node: &BreakthroughNode, depth: u32) -> (Option<BreakthroughMove>, Evaluation) {
     negamax(
         node,
         depth,
