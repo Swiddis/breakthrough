@@ -132,7 +132,6 @@ pub fn negamax(
     alpha: Evaluation,
     beta: Evaluation,
     table: &mut TranspositionTable,
-    force: bool,
 ) -> (Option<BreakthroughMove>, Evaluation) {
     if node.is_terminal() || depth == 0 {
         return (None, evaluate_result(node));
@@ -140,14 +139,12 @@ pub fn negamax(
 
     // If we don't need a move, try non-move search pruning
     // TODO we should actually store/compute the move and return it here
-    if !force {
-        if let Some(eval) = fast_win(node) {
-            return (None, eval);
-        }
+    if let Some(eval) = fast_win(node) {
+        return (None, eval);
+    }
 
-        if let Some(entry) = table.get(node, depth) {
-            return (None, entry.2);
-        }
+    if let Some(entry) = table.get(node, depth) {
+        return (None, entry.2);
     }
 
     let mut actions = get_filtered_actions(node);
@@ -171,7 +168,6 @@ pub fn negamax(
             -beta,
             -alpha,
             table,
-            false,
         );
         if -eval.1 > value.1 {
             value = (Some(action), -eval.1);

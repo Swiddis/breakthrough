@@ -17,10 +17,10 @@ pub fn evaluate_with_ttable(
         Evaluation::BlackWinPly(node.ply),
         Evaluation::WhiteWinPly(node.ply),
         table,
-        true,
     );
     match eval.0 {
         Some(e) => (e, eval.1),
+        // If no move is returned, just get any random result
         None => (node.get_possible_actions()[0].clone(), eval.1),
     }
 }
@@ -32,7 +32,6 @@ pub fn evaluate(node: &BreakthroughNode, depth: u32) -> (BreakthroughMove, Evalu
         Evaluation::BlackWinPly(node.ply),
         Evaluation::WhiteWinPly(node.ply),
         &mut TranspositionTable::new(0),
-        true,
     );
     match eval.0 {
         Some(e) => (e, eval.1),
